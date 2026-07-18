@@ -1,8 +1,12 @@
 import express from 'express';
+import fs from 'fs';
+import swaggerUi from 'swagger-ui-express';
 const app = express();
 const PORT = 3000;
 app.use(express.json());
 
+const swaggerDocument = JSON.parse(fs.readFileSync('./openapi.json', 'utf8'));
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 let tasks = [
     {id: 1, title: "Learn Express.js", done: false},
     {id: 2, title: "Build a CRUD API", done: false},
