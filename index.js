@@ -1,12 +1,33 @@
 import express from 'express';
 import fs from 'fs';
 import swaggerUi from 'swagger-ui-express';
+import Database from 'better-sqlite3';
+
 const app = express();
 const PORT = 3000;
 app.use(express.json());
 
 const swaggerDocument = JSON.parse(fs.readFileSync('./openapi.json', 'utf8'));
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+const db = new Database('tasks.db');
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS tasks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT,
+    done BOOLEAN
+  )
+`);
+
+const stmt = db.prepare('SELECT COUNT(*) AS count FROM tasks');
+const { count } = stmt.get();
+if (count === 0) {
+    const insert = db.prepare('INSERT INTO tasks (title, done) VALUES (?, ?)');
+    insert.run("Learn Express.js", 0);
+    insert.run("Build a CRUD API", 0);
+    insert.run("Clean up .gitignore", 0);
+}
 let tasks = [
     {id: 1, title: "Learn Express.js", done: false},
     {id: 2, title: "Build a CRUD API", done: false},
