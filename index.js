@@ -28,11 +28,6 @@ if (count === 0) {
     insert.run("Build a CRUD API", 0);
     insert.run("Clean up .gitignore", 0);
 }
-let tasks = [
-    {id: 1, title: "Learn Express.js", done: false},
-    {id: 2, title: "Build a CRUD API", done: false},
-    {id: 3, title: "Clean up .gitignore", done: false}
-];
 app.get('/', (req, res) => {
     res.json({
         name: "Task API",
@@ -76,7 +71,7 @@ app.post('/tasks', (req, res) => {
 });
 app.put('/tasks/:id', (req, res) => {
     const taskId = parseInt(req.params.id, 10);
-    const task = tasks.find(t => t.id === taskId);
+    const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(taskId);
     if (!task) {
         return res.status(404).json({ error: `Task ${req.params.id} not found` });
     }
@@ -90,19 +85,24 @@ app.put('/tasks/:id', (req, res) => {
         return res.status(400).json({ error: "Done must be a boolean" });
     }
 
-    if (title !== undefined) task.title = title.trim();
-    if (done !== undefined) task.done = done;
+    const newTitle = title !== undefined ? title.trim() : task.title;
+    const newDone = done !== undefined ? (done ? 1 : 0) : task.done;
 
-    res.json(task);
+    db.prepare('UPDATE tasks SET title = ?, done = ? WHERE id = ?').run(newTitle, newDone, taskId);
+
+    res.json({
+        id: taskId,
+        title: newTitle,
+        done: newDone === 1
+    });
 });
 
 app.delete('/tasks/:id', (req, res) => {
     const taskId = parseInt(req.params.id, 10);
-    const index = tasks.findIndex(t => t.id === taskId);
-    if (index === -1) {
+    const info = db.prepare('DELETE FROM tasks WHERE id = ?').run(taskId);
+    if (info.changes === 0) {
         return res.status(404).json({ error: `Task ${req.params.id} not found` });
     }
-    tasks.splice(index, 1);
     res.status(204).send();
 });
 app.listen(PORT, () => {
