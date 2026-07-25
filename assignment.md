@@ -1,5 +1,5 @@
-The details of the assignment are also provided in the PDF file that is attached to this assignment.
-W2 · A1 — Build your first CRUD API
+
+# W2 · A1 — Build your first CRUD API
 💡 New words are marked in bold the first time they appear. Every bold word is explained in the Glossary at the bottom. If a sentence confuses you, check the glossary first — it's probably one word, not the whole idea.
 
 Goal
@@ -296,3 +296,288 @@ Plain-language definitions of every bold word above. No definition depends on an
 | Prompt | The instructions you give an AI assistant. In Stage 7 your prompt is a mini-specification: the more precisely it names endpoints, status codes and rules, the closer the output lands to your API. |
 
 | Diff | A line-by-line comparison of two versions of code, showing what was added, removed or changed. git diff produces one; reading diffs is how professionals review each other's work. |
+
+Details
+The details of the assignment are also provided in the PDF file that is attached to this assignment.
+Here's a Week 2 – Part 2 assignment that naturally continues from the first one. Instead of using an in-memory array, you will replace it with a real database while keeping exactly the same API. This reinforces the idea that persistence is an implementation detail behind the API, not a change to the API itself.
+
+# W3 · A2 — Connecting your CRUD to the database
+## Goal
+Take the CRUD API you built in Assignment 1 and replace the in-memory task list with a real SQLite database. Your API endpoints should continue to behave exactly the same, but now your data survives when the server restarts.
+
+## Purpose
+Last assignment, your tasks disappeared every time you restarted the server. That wasn't a bug, it was the limitation of storing data in memory.
+
+Real applications store their data in databases. Instead of keeping a list of tasks inside your code, your server will now save them in SQLite, a lightweight database stored in a single file on your computer.
+
+The exciting part is that almost none of your API changes. Clients still send the same requests to the same endpoints. Only the storage layer changes.
+
+This is one of the biggest ideas in backend development:
+
+APIs describe what your application does. Databases describe where your application stores its data.
+
+The big idea in 60 seconds
+So far your architecture looked like this:
+
+Client -> API -> Array in memory
+
+Now it becomes:
+
+Client -> API -> SQL Database
+
+The client doesn't know the difference.
+
+GET /tasks still returns tasks.
+
+POST /tasksstill creates tasks.
+
+PUT still updates.
+
+DELETE still deletes.
+
+The only difference is that restarting your server no longer deletes everything.
+
+Tools — pick ONE lane
+🟨 JavaScript lane
+
+Database: SQL Lite
+Library: better-sqlite3 (recommended)
+Database file: tasks.db
+🐍 Python lane
+
+Database: SQL Lite
+Library: SQLModel or sqlite3
+Database file: tasks.db
+SQLite requires no installation or server.
+
+The first time your application runs, it will automatically create the database file.
+
+## The task — six stages
+Stage 0 — Create your database (~30 min)
+Instead of creating an array of tasks, create a SQLite database called:
+
+tasks.db
+
+Create a table named:
+
+tasks
+
+with these columns:
+
+id (integer primary key)
+title (text)
+done (boolean)
+When your application starts:
+
+create the table if it doesn't already exist
+insert three example tasks only if the table is empty
+Checkpoint:
+
+Restart your application several times.
+
+The example tasks should only appear once.
+
+Commit:
+
+Stage 0: create SQLite database
+
+Stage 1 — Read from the database (~45 min)
+Replace the code that reads from your in-memory array.
+
+GET /tasks should now execute a SQL query that returns every task.
+
+GET /tasks/{id} should return one task from the database.
+
+Unknown ids still return:
+
+404{ "error": "Task not found"}
+
+Nothing about your API should change.
+
+Checkpoint:
+
+GET /tasks
+
+returns the database contents.
+
+Commit:
+
+Stage 1: database read endpoints
+
+Stage 2 — Create new tasks (~45 min)
+POST /tasks should now insert a new row into the database instead of pushing into an array.
+
+The same validation rules still apply.
+
+Missing title:
+
+400
+
+Successful request:
+
+201
+
+Checkpoint:
+
+Create several tasks.
+
+Restart the server.
+
+Run GET /tasks again.
+
+The tasks should still exist.
+
+This is the first time your data survives a restart.
+
+Commit:
+
+Stage 2: insert into database
+
+Stage 3 — Update and delete (~45 min)
+Replace your update and delete logic with SQL.
+
+PUT should update a row.
+
+DELETE should remove a row.
+
+The API behaviour should remain identical.
+
+Checkpoint:
+
+Create a task.
+
+Update it.
+
+Delete it.
+
+Confirm every operation using GET /tasks.
+
+Commit:
+
+Stage 3: update and delete with SQL
+
+Stage 4 — Learn your first SQL (~45 min)
+Open the database using any SQLite viewer (DB Browser for SQLite is recommended).
+
+Run these queries manually:
+
+List every task:
+
+SELECT * FROM tasks;
+
+Show only completed tasks:
+
+SELECT * FROM tasks WHERE done = 1;
+
+Count all tasks:
+
+SELECT COUNT(*) FROM tasks;
+
+Mark every task as completed:
+
+UPDATE tasks SET done = 1;
+
+Delete all completed tasks:
+
+DELETE FROM tasks WHERE done = 1;
+
+Notice how the API immediately reflects your database changes.
+
+Checkpoint:
+
+Modify the database manually and verify the changes through your API.
+
+Commit:
+
+Stage 4: explored SQLite
+
+Stage 5 — Publish your database project (~30 min)
+Update your README.
+
+Add:
+
+why SQLite was chosen
+where the database file is stored
+how to start the project
+a screenshot of your database viewer
+one example SQL query you executed
+Checkpoint:
+
+Someone cloning your repository can run the project and automatically create the database.
+
+Commit:
+
+Stage 5: database documentation
+
+★ Optional extras
+Choose any that sound interesting.
+
+Search using SQL:
+GET /tasks?search=milk using SQL's LIKE operator.
+
+Filter completed tasks:
+GET /tasks?done=trueusing a SQL WHERE clause.
+
+Sort alphabetically
+Return tasks ordered by title.
+
+Return statistics
+GET /statsusing SQL's COUNT()
+
+instead of counting in JavaScript/Python.
+
+Add timestamps
+Store:
+
+created_at
+updated_at
+for every task.
+
+Requirements
+Done means every box is ticked.
+
+The API still exposes the same CRUD endpoints as Assignment 1.
+Tasks are stored in SQLite instead of memory.
+Data survives server restarts.
+The database is automatically created if missing.
+The tasks table is automatically created if missing.
+Three example tasks are inserted only on the first run.
+CRUD operations use SQL queries.
+Unknown ids return 404.
+Invalid requests return 400.
+Public GitHub repository updated with README and database screenshot.
+What you should notice
+By the end of this assignment, the API should feel almost identical to Assignment 1.
+
+The URLs didn't change.
+
+The request bodies didn't change.
+
+The responses didn't change.
+
+Only the implementation changed.
+
+This separation between the API layer and the data layer is one of the foundations of backend engineering. Once you understand it, moving from SQLite to PostgreSQL, MySQL, SQL Server, or another database later becomes much easier.
+
+# W3 · A3 Containerize Your Stack
+## Goal
+Run Postgres in Docker, connect your A2 service to it (swapping the in-memory store for a real repository), and start app + database together with one command.
+
+## Purpose
+This is the survival kit applied in one real task: Docker, SQL, .env, and the payoff of A2's layering — proving that "switch storage" really does change only one file. Data that survives a restart is the moment your project stops being a demo. Every later week (jobs, caching, RAG) assumes this local stack.
+
+## The task
+Start Postgres in Docker with a volume so data persists (the Docker guide has the exact command).
+Put the connection string in .env — gitignored, with a committed .env.example .
+Create your table with one SQL file (or a tiny init script)
+Write a Postgres repository implementing the same interface as your in-memory one, and swap it in. Your service and routes must not change — that's the architecture proving itself.
+docker-compose.yml : app + database together; docker compose up runs the whole stack.
+Prove persistence: create rows → restart app and container → rows still there.
+## Requirements
+Postgres runs in Docker with a volume ; the whole stack starts with docker compose up .
+Connection string from .env (gitignored; .env.example committed).
+A Postgres repository replaced the in-memory one — service and routes unchanged (say so in the README, honestly).
+Persistence proven across an app + container restart (how you checked goes in the README).
+Stretch (optional)
+Add Redis to the compose file (you'll want it in W4) and ping it from the app.
+Add one index and show EXPLAIN ANALYZE before/after on a seeded table.

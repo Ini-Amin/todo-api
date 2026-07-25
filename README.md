@@ -1,17 +1,18 @@
 # To-Do API
 
-This is a RESTful CRUD API built with Express.js for managing a To-Do list. Tasks are stored in a local SQLite database (`tasks.db`), ensuring data survives server restarts. SQLite was chosen because it requires no installation or background server process, making it perfect for simple local persistence.
+This is a RESTful CRUD API built with Express.js for managing a To-Do list. The application and database are fully containerized using Docker, with data persisting via PostgreSQL.
+
 ## How to Install & Run
 
-Ensure you have Node.js and `pnpm` installed.
+Ensure you have Docker and Docker Compose installed on your system.
 
-1. Install dependencies:
+1. Create a `.env` file from the example:
    ```bash
-   pnpm install
+   cp .env.example .env
    ```
-2. Start the development server:
+2. Start the application and database together:
    ```bash
-   pnpm dev
+   docker compose up --build -d
    ```
 The API will be available at `http://localhost:3000`.
 
@@ -27,33 +28,14 @@ The API will be available at `http://localhost:3000`.
 | Documentation | `GET` | `/docs` | Interactive Swagger UI |
 | Health Check | `GET` | `/health` | Check if server is running |
 
-## Example Request
+## Architecture
 
-```http
-HTTP/1.1 201 Created
-X-Powered-By: Express
-Content-Type: application/json; charset=utf-8
-Content-Length: 46
-Date: Sat, 18 Jul 2026 13:00:00 GMT
-Connection: keep-alive
-
-{"id":4,"title":"Buy Yakult","done":false}
-```
+This iteration of the project implements the Repository Pattern to decouple the API routing logic from the database logic.
+- `index.js`: Handles incoming HTTP requests, validation, and responses.
+- `taskRepository.js`: Handles direct communication and SQL queries to the PostgreSQL database.
 
 ## Swagger UI
 
 Interactive API documentation is available at `/docs`.
 
 ![Swagger UI Screenshot](./screenshot.png)
-
-## Database Details
-
-The data is stored in `tasks.db` at the root of the project.
-
-### Example SQL Query
-
-You can view the data using any SQLite viewer (like DB Browser for SQLite). Here is an example query you can run to view all tasks:
-```sql
-SELECT * FROM tasks;
-```
-![Database Viewer Screenshot](./screenshot.png)
