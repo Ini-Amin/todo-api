@@ -1,7 +1,6 @@
 # To-Do API
 
-This is a simple RESTful CRUD API built with Express.js for managing a To-Do list. All tasks are stored in memory.
-
+This is a RESTful CRUD API built with Express.js for managing a To-Do list. Tasks are stored in a local SQLite database (`tasks.db`), ensuring data survives server restarts. SQLite was chosen because it requires no installation or background server process, making it perfect for simple local persistence.
 ## How to Install & Run
 
 Ensure you have Node.js and `pnpm` installed.
@@ -46,3 +45,15 @@ Connection: keep-alive
 Interactive API documentation is available at `/docs`.
 
 ![Swagger UI Screenshot](./screenshot.png)
+
+## Database Details
+
+The data is stored in `tasks.db` at the root of the project.
+
+### Example SQL Query
+
+You can view the data using any SQLite viewer (like DB Browser for SQLite). Here is an example query you can run to view all tasks:
+```sql
+SELECT * FROM tasks;
+```
+![Database Viewer Screenshot](./screenshot.png)
